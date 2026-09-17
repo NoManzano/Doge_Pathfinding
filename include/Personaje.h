@@ -1,16 +1,11 @@
-#ifndef PERSONAJE_H
-#define PERSONAJE_H
-
-#include <SFML/Graphics.hpp>
-
+#pragma once
+#include "Mapa.h"
 class Personaje {
-private:
-    sf::Vector2f posicion;
-
 public:
-    Personaje();
-
-    void dibujar(sf::RenderWindow& ventana) const;
+    sf::Vector2f posicion{1.5f,1.5f};
+    float angulo=0.f;
+    int vida=100, municion=36;
+    void actualizar(float delta, const Mapa& mapa);
+    void mover(sf::Vector2f desplazamiento, const Mapa& mapa);
 };
 
-#endif

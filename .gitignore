@@ -30,3 +30,9 @@
 *.exe
 *.out
 *.app
+
+/dist/
+
+/qa/
+/smoke-results.txt
+/smoke-errors.txt
