@@ -1,11 +1,14 @@
 #ifndef juego_h
 #define juego_h
 #include <SFML/Graphics.hpp>
+#include "Mapa.h"
+#include "Personaje.h"
 
 class Juego {
 private:
+    Personaje personaje;
+    Mapa mapa;
     sf::RenderWindow ventana;
-    Tamagotchi mascota;
     sf::Clock reloj;
     float tiempoTranscurrido;
 

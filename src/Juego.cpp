@@ -1,21 +1,20 @@
 #include "Juego.h"
 
-Juego::Juego() : ventana(sf::VideoMode({1408, 768}), "Tamagotchi") {
-    tiempoTranscurrido = 0.0f;
+Juego::Juego()
+    : mapa(),
+      personaje(),
+      ventana(sf::VideoMode({1408, 768}), "DOOM: Pathfinding"),
+      tiempoTranscurrido(0.0f) {
 }
 
 void Juego::ejecutar() {
     while (ventana.isOpen()) {
         procesarEventos();
 
-        float dt = reloj.restart().asSeconds();
-        tiempoTranscurrido += dt;
+        if (!ventana.isOpen())
+            break;
 
-        if (tiempoTranscurrido >= 1.0f) {
-            tiempoTranscurrido = 0.0f;
-            actualizar(); 
-        }
-
+        actualizar();
         dibujar();
     }
 }
@@ -26,34 +25,40 @@ void Juego::procesarEventos() {
         if (evento->is<sf::Event::Closed>()) {
             ventana.close();
         }
-
-        if (const auto* keyPressed = evento->getIf<sf::Event::KeyPressed>()) {
-            if (keyPressed->code == sf::Keyboard::Key::A) {
-                mascota.acariciar();
-            } else if (keyPressed->code == sf::Keyboard::Key::C) {
-                mascota.comer();
-            } else if (keyPressed->code == sf::Keyboard::Key::D) {
-                mascota.defecar();
-            } else if (keyPressed->code == sf::Keyboard::Key::S) {
-                mascota.dormir();
-            }
-            else if (keyPressed->code == sf::Keyboard::Key::E) {
-                mascota.enfermar();
-            } else if (keyPressed->code == sf::Keyboard::Key::M) {
-                mascota.morir();
-            } else if (keyPressed->code == sf::Keyboard::Key::N) {
-                mascota.nacer();
-            }
-        }
     }
 }
 
 void Juego::actualizar() {
-    mascota.actualizar();
+    tiempoTranscurrido = reloj.restart().asSeconds();
+    personaje.actualizar(tiempoTranscurrido);
 }
 
 void Juego::dibujar() {
     ventana.clear(sf::Color(230, 230, 230));
-    mascota.dibujar(ventana);
+
+    const auto& celdas = mapa.obtenerCeldas();
+    constexpr float tamanoCelda = 64.0f;
+
+    for (std::size_t fila = 0; fila < celdas.size(); ++fila) {
+        for (std::size_t columna = 0; columna < celdas[fila].size(); ++columna) {
+            sf::RectangleShape rectangulo;
+            rectangulo.setSize({tamanoCelda, tamanoCelda});
+            rectangulo.setPosition({
+                static_cast<float>(columna) * tamanoCelda,
+                static_cast<float>(fila) * tamanoCelda
+            });
+
+            if (celdas[fila][columna] == '#') {
+                rectangulo.setFillColor(sf::Color(40, 40, 40));
+            } else {
+                rectangulo.setFillColor(sf::Color(180, 180, 180));
+            }
+
+            ventana.draw(rectangulo);
+        }
+    }
+
+    personaje.dibujar(ventana);
+
     ventana.display();
 }
