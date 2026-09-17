@@ -1,6 +1,8 @@
 #include "Mapa.h"
 #include <algorithm>
 #include <cmath>
+#include <functional>
+#include <limits>
 #include <queue>
 Mapa::Mapa() { cargar(0); }
 void Mapa::cargar(int nivel) {
@@ -47,19 +49,43 @@ std::vector<sf::Vector2i> Mapa::ruta(sf::Vector2f inicio, sf::Vector2f destino) 
     sf::Vector2i a{int(std::floor(inicio.x)),int(std::floor(inicio.y))};
     sf::Vector2i b{int(std::floor(destino.x)),int(std::floor(destino.y))};
     if (esPared(a.y,a.x)||esPared(b.y,b.x)) return {};
+
+    auto indice=[w](int x,int y){return y*w+x;};
+    auto heuristica=[b](int x,int y){
+        return std::abs(x-b.x)+std::abs(y-b.y);
+    };
+
+    struct Nodo {
+        int indice;
+        int prioridad;
+    };
+    auto comparar=[](const Nodo& izquierdo,const Nodo& derecho){
+        return izquierdo.prioridad>derecho.prioridad;
+    };
+
     std::vector<int> padre(w*h,-1);
-    std::queue<int> pendientes;
-    int s=a.y*w+a.x, fin=b.y*w+b.x;
-    padre[s]=s; pendientes.push(s);
+    std::vector<int> costo(w*h,std::numeric_limits<int>::max());
+    std::priority_queue<Nodo,std::vector<Nodo>,decltype(comparar)> pendientes(comparar);
+    int s=indice(a.x,a.y), fin=indice(b.x,b.y);
+    padre[s]=s; costo[s]=0;
+    pendientes.push({s,heuristica(a.x,a.y)});
     const sf::Vector2i direcciones[]={{1,0},{-1,0},{0,1},{0,-1}};
-    while (!pendientes.empty() && padre[fin]<0) {
-        int actual=pendientes.front(); pendientes.pop();
+    while (!pendientes.empty()) {
+        Nodo nodo=pendientes.top(); pendientes.pop();
+        int actual=nodo.indice;
+        int actualX=actual%w, actualY=actual/w;
+        if (nodo.prioridad!=costo[actual]+heuristica(actualX,actualY)) continue;
+        if (actual==fin) break;
+
         for (auto d:direcciones) {
-            int x=actual%w+d.x, y=actual/w+d.y;
+            int x=actualX+d.x, y=actualY+d.y;
             if (esPared(y,x)) continue;
-            int siguiente=y*w+x;
-            if (padre[siguiente]>=0) continue;
-            padre[siguiente]=actual; pendientes.push(siguiente);
+            int siguiente=indice(x,y);
+            int nuevoCosto=costo[actual]+1;
+            if (nuevoCosto>=costo[siguiente]) continue;
+            costo[siguiente]=nuevoCosto;
+            padre[siguiente]=actual;
+            pendientes.push({siguiente,nuevoCosto+heuristica(x,y)});
         }
     }
     if (padre[fin]<0) return {};

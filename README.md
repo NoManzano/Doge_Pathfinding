@@ -62,7 +62,7 @@ de movimiento o el equilibrio jugando.
 
 ## Organización
 
-- src/Mapa.cpp: escenarios, colisiones, rayos DDA y rutas BFS.
+- src/Mapa.cpp: escenarios, colisiones, rayos DDA y rutas A*.
 - src/Personaje.cpp: movimiento y giro por teclado.
 - src/Juego.cpp: campaña, combate, interfaz, renderizado y sonido.
 - include/: interfaces de las clases.
